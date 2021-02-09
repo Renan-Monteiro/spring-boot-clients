@@ -8,7 +8,6 @@ import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 import static java.time.format.DateTimeFormatter.ofPattern;
 
