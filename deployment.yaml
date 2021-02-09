@@ -1,0 +1,158 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cliente
+  namespace: builders
+data:
+  SPRING_DATASOURCE_CLASS_NAME: org.postgresql.Driver
+  SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/cliente
+  SPRING_DATASOURCE_USERNAME: <username>
+  LOGGING_LEVEL_ROOT: INFO
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: cliente
+  namespace: builders
+type: Opaque
+data:
+  SPRING_DATASOURCE_PASSWORD: <password>
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cliente
+  namespace: builders
+  labels:
+    name: cliente
+    tier: backend
+spec:
+  ports:
+    - name: cliente
+      port: 8080
+      targetPort: 8080
+  selector:
+    name: cliente
+    tier: backend
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: cliente
+  nmespace: builders
+spec:
+  selector:
+    matchLabels:
+      name: cliente
+      tier: backend
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        name: cliente
+        tier: backend
+    spec:
+      containers:
+        - name: cliente
+          image: <myregistry>/buildersimage:tag
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: cliente
+                optional: false
+            - secretRef:
+                name: cliente
+                optional: false
+      imagePullSecrets:
+        - name: <myregistry>
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  generation: 1
+  name: cliente-ingress
+  namespace: builders
+spec:
+  rules:
+    - host: cliente.<mydomain>
+      http:
+        paths:
+          - backend:
+              serviceName: client
+              servicePort: 8080
+            path: /
+#### Deploy postgresql
+apiVersion: v1
+kind: ConfigMap
+metadata:
+    name: postgres
+    namespace: builders
+data:
+    POSTGRES_DB: <database>
+    POSTGRES_USER: <username>
+---
+apiVersion: v1
+data:
+    POSTGRES_PASSWORD: <password>
+kind: Secret
+metadata:
+    name: postgres
+    namespace: builders
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+  namespace: builders
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: postgres
+      tier: database
+  template:
+    metadata:
+      labels:
+        name: postgres
+        tier: database
+      name: postgres
+    spec:
+      containers:
+        - envFrom:
+          - configMapRef:
+            name: postgres
+            optional: false
+          - secretRef:
+            name: postgres
+            optional: false
+          image: postgres:12.1
+          imagePullPolicy: IfNotPresent
+          name: postgres
+          ports:
+            - containerPort: 5432
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: volume
+              subPath: cliente
+    volumes:
+      - name: volume
+        persistentVolumeClaim:
+          claimName: builders-postgres
+---
+apiVersion: v1
+kind: Service
+metadata:
+    name: postgres
+    namespace: builders
+    labels:
+        name: postgres
+        tier: database
+spec:
+    ports:
+        - name: database
+          port: 5432
+          targetPort: 5432
+    selector:
+        name: postgres
+        tier: database

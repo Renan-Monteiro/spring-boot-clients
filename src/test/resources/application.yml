@@ -1,0 +1,21 @@
+server:
+  contextPath: /
+  use-forward-headers: true
+  port: 8082
+
+spring:
+  mail:
+    host: localhost
+    port: 3025
+    properties:
+      mail:
+        debug: true
+        smtp:
+          debug: true
+security:
+  user:
+    password: none
+
+feign:
+  hystrix:
+    enabled: true

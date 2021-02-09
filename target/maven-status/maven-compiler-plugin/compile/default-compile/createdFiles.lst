@@ -1,0 +1,15 @@
+io/builders/module/cliente/entity/ClienteEntity.class
+io/builders/swagger/DocketCriadoEvent.class
+io/builders/config/CorsConfig.class
+io/builders/module/cliente/repository/ClienteRepository.class
+io/builders/module/cliente/service/ClienteService.class
+io/builders/swagger/SwaggerConfig.class
+io/builders/module/cliente/mapper/ClienteMapperImpl.class
+io/builders/module/cliente/entity/ClienteEntity$ClienteEntityBuilder.class
+io/builders/module/cliente/dto/ClienteDTO.class
+io/builders/Application.class
+io/builders/module/cliente/mapper/ClienteMapper.class
+io/builders/module/cliente/v1/ClienteController.class
+io/builders/module/base/EntityBase.class
+io/builders/util/Util.class
+io/builders/module/base/MapperBase.class

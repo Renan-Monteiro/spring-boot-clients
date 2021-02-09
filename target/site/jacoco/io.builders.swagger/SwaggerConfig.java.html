@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SwaggerConfig.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">builders</a> &gt; <a href="index.source.html" class="el_package">io.builders.swagger</a> &gt; <span class="el_source">SwaggerConfig.java</span></div><h1>SwaggerConfig.java</h1><pre class="source lang-java linenums">package io.builders.swagger;
+
+import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Sets.newHashSet;
+import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8_VALUE;
+import static springfox.documentation.schema.AlternateTypeRules.newRule;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
+
+import com.fasterxml.classmate.TypeResolver;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.context.request.async.DeferredResult;
+
+import io.swagger.annotations.Api;
+import springfox.bean.validators.configuration.BeanValidatorPluginsConfiguration;
+import springfox.documentation.builders.ApiInfoBuilder;
+import springfox.documentation.builders.ParameterBuilder;
+import springfox.documentation.builders.PathSelectors;
+import springfox.documentation.builders.RequestHandlerSelectors;
+import springfox.documentation.builders.ResponseMessageBuilder;
+import springfox.documentation.schema.ModelRef;
+import springfox.documentation.schema.WildcardType;
+import springfox.documentation.service.ApiInfo;
+import springfox.documentation.service.Contact;
+import springfox.documentation.service.ResponseMessage;
+import springfox.documentation.spi.DocumentationType;
+import springfox.documentation.spring.web.plugins.Docket;
+import springfox.documentation.swagger.web.DocExpansion;
+import springfox.documentation.swagger.web.ModelRendering;
+import springfox.documentation.swagger.web.OperationsSorter;
+import springfox.documentation.swagger.web.TagsSorter;
+import springfox.documentation.swagger.web.UiConfiguration;
+import springfox.documentation.swagger.web.UiConfigurationBuilder;
+import springfox.documentation.swagger2.annotations.EnableSwagger2;
+
+@Configuration
+@EnableSwagger2
+@Import({BeanValidatorPluginsConfiguration.class})
+public class SwaggerConfig {
+
+    private final TypeResolver typeResolver;
+    private final ApplicationEventPublisher publisher;
+
+    @Value(&quot;${spring.application.name}&quot;)
+    private String nomeProjeto;
+
+    @Value(&quot;${app.isSeguro}&quot;)
+    private boolean isSeguro;
+
+<span class="fc" id="L60">    public SwaggerConfig(TypeResolver typeResolver, ApplicationEventPublisher publisher) {</span>
+<span class="fc" id="L61">        this.typeResolver = typeResolver;</span>
+<span class="fc" id="L62">        this.publisher = publisher;</span>
+<span class="fc" id="L63">    }</span>
+
+    @Bean
+    public Docket apiV1() {
+<span class="fc" id="L67">        return criarDocket(&quot;v1&quot;);</span>
+    }
+
+    @Bean
+    public Docket apiV2() {
+<span class="fc" id="L72">        return criarDocket(&quot;v2&quot;);</span>
+    }
+
+    private Docket criarDocket(String apiVersion) {
+
+<span class="fc" id="L77">        Docket docket = new Docket(DocumentationType.SWAGGER_2)</span>
+<span class="pc bpc" id="L78" title="1 of 2 branches missed.">                .protocols(newHashSet(isSeguro?&quot;https&quot;:&quot;http&quot;))</span>
+<span class="fc" id="L79">                .forCodeGeneration(true)</span>
+<span class="fc" id="L80">                .groupName(apiVersion)</span>
+<span class="fc" id="L81">                .produces(newHashSet(APPLICATION_JSON_UTF8_VALUE))</span>
+<span class="fc" id="L82">                .apiInfo(apiInfo())</span>
+<span class="fc" id="L83">                .select()</span>
+<span class="fc" id="L84">                .apis(RequestHandlerSelectors.withClassAnnotation(Api.class))</span>
+<span class="fc" id="L85">                .paths(PathSelectors.regex(&quot;/&quot; + apiVersion + &quot;/.*&quot;))</span>
+<span class="fc" id="L86">                .build()</span>
+<span class="fc" id="L87">                .globalOperationParameters(Arrays.asList(new ParameterBuilder().name(&quot;Authorization&quot;).parameterType(&quot;header&quot;).modelRef(new ModelRef(&quot;string&quot;)).required(false).build()))</span>
+<span class="fc" id="L88">                .pathMapping(&quot;/&quot;)</span>
+<span class="fc" id="L89">                .directModelSubstitute(LocalDate.class, java.sql.Date.class)</span>
+<span class="fc" id="L90">                .directModelSubstitute(LocalDateTime.class, java.util.Date.class)</span>
+<span class="fc" id="L91">                .genericModelSubstitutes(ResponseEntity.class)</span>
+<span class="fc" id="L92">                .alternateTypeRules(</span>
+<span class="fc" id="L93">                        newRule(typeResolver.resolve(DeferredResult.class,</span>
+<span class="fc" id="L94">                                typeResolver.resolve(ResponseEntity.class, WildcardType.class)),</span>
+<span class="fc" id="L95">                                typeResolver.resolve(WildcardType.class)))</span>
+<span class="fc" id="L96">                .useDefaultResponseMessages(true)</span>
+<span class="fc" id="L97">                .globalResponseMessage(RequestMethod.GET, globalResponses())</span>
+<span class="fc" id="L98">                .globalResponseMessage(RequestMethod.POST, globalResponses())</span>
+<span class="fc" id="L99">                .globalResponseMessage(RequestMethod.DELETE, globalResponses())</span>
+<span class="fc" id="L100">                .globalResponseMessage(RequestMethod.PUT, globalResponses())</span>
+<span class="fc" id="L101">                .globalResponseMessage(RequestMethod.PATCH, globalResponses());</span>
+
+<span class="fc" id="L103">        publisher.publishEvent(new DocketCriadoEvent(this, docket));</span>
+
+<span class="fc" id="L105">        return docket;</span>
+    }
+
+    @Bean
+    UiConfiguration uiConfig() {
+<span class="fc" id="L110">        return UiConfigurationBuilder.builder()</span>
+<span class="fc" id="L111">                .deepLinking(true)</span>
+<span class="fc" id="L112">                .displayOperationId(false)</span>
+<span class="fc" id="L113">                .defaultModelsExpandDepth(1)</span>
+<span class="fc" id="L114">                .defaultModelExpandDepth(1)</span>
+<span class="fc" id="L115">                .defaultModelRendering(ModelRendering.EXAMPLE)</span>
+<span class="fc" id="L116">                .displayRequestDuration(false)</span>
+<span class="fc" id="L117">                .docExpansion(DocExpansion.NONE)</span>
+<span class="fc" id="L118">                .filter(false)</span>
+<span class="fc" id="L119">                .maxDisplayedTags(null)</span>
+<span class="fc" id="L120">                .operationsSorter(OperationsSorter.ALPHA)</span>
+<span class="fc" id="L121">                .showExtensions(false)</span>
+<span class="fc" id="L122">                .tagsSorter(TagsSorter.ALPHA)</span>
+<span class="fc" id="L123">                .validatorUrl(null)</span>
+<span class="fc" id="L124">                .build();</span>
+    }
+
+    private ApiInfo apiInfo() {
+<span class="fc" id="L128">        return new ApiInfoBuilder()</span>
+<span class="fc" id="L129">                .version(&quot;1.0.0&quot;)</span>
+<span class="fc" id="L130">                .title(&quot;API&quot;)</span>
+<span class="fc" id="L131">                .description(&quot;&quot;)</span>
+<span class="fc" id="L132">                .contact(new Contact(&quot;Builders&quot;, &quot;builders.io&quot;, &quot;contact.builders@mail.com&quot;))</span>
+<span class="fc" id="L133">                .build();</span>
+    }
+
+    private List&lt;ResponseMessage&gt; globalResponses() {
+<span class="fc" id="L137">        return newArrayList(</span>
+<span class="fc" id="L138">                new ResponseMessageBuilder().code(500).message(&quot;Erro inesperado no servidor, não foi possível processar a solicitação&quot;).build()</span>
+<span class="fc" id="L139">                , new ResponseMessageBuilder().code(400).message(&quot;Dados inválidos fornecidos pelo cliente&quot;).build()</span>
+<span class="fc" id="L140">                , new ResponseMessageBuilder().code(401).message(&quot;Usuário não autenticado&quot;).build()</span>
+<span class="fc" id="L141">                , new ResponseMessageBuilder().code(403).message(&quot;Usuário sem permissão para esta operação&quot;).build()</span>
+        );
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.4.201905082037</span></div></body></html>
