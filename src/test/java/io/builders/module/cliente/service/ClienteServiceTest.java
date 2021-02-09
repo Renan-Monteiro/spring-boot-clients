@@ -5,23 +5,19 @@ import io.builders.module.cliente.repository.ClienteRepository;
 import io.builders.module.mock.ClientEntityMock;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.mockito.Mock;
 
+import static org.junit.Assert.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
-import static org.junit.Assert.assertNotNull;
 
 @AutoConfigureMockMvc
 public class ClienteServiceTest {
 
     @Mock
     ClienteRepository clienteRepository;
-
-    @InjectMocks
-    ClienteService clienteService;
 
     @Before
     public void setUp() {

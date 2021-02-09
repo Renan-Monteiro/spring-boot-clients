@@ -31,6 +31,7 @@
 		<greenmail.version>1.5.10</greenmail.version>
 		<maven-model.version>3.6.1</maven-model.version>
 		<build-helper-maven-plugin.version>3.0.0</build-helper-maven-plugin.version>
+        <cucumber.version>6.7.0</cucumber.version>
 	</properties>
 
 	<dependencies>
@@ -162,7 +163,29 @@
 			<scope>test</scope>
 		</dependency>
 
-	</dependencies>
+        <dependency>
+            <groupId>io.cucumber</groupId>
+            <artifactId>cucumber-java</artifactId>
+            <version>${cucumber.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>io.cucumber</groupId>
+            <artifactId>cucumber-junit</artifactId>
+            <version>${cucumber.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>io.cucumber</groupId>
+            <artifactId>cucumber-spring</artifactId>
+            <version>${cucumber.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+
+    </dependencies>
 
 	<dependencyManagement>
 		<dependencies>
