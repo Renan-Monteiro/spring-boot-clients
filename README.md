@@ -9,7 +9,7 @@
 3. [Acessar o projeto](#3-acessar-o-projeto)
 4. [Deploy no kubernetes](#4-deploy-no-kubernetes)
 
-
+:smiley:
 ## 1 Sobre o projeto
 
 Exemplo de aplicação Java com Spring boot para cadastro de clientes.
